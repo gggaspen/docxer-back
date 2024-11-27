@@ -12,6 +12,13 @@ func main() {
 	_ = os.MkdirAll("uploads", os.ModePerm)
 	_ = os.MkdirAll("downloads", os.ModePerm)
 
+	// Obtener el puerto desde las variables de entorno
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080" // Valor predeterminado
+	}
+
+	// Configurar rutas
 	mux := http.NewServeMux()
 	mux.HandleFunc("/upload", handlers.UploadHandler)
 	mux.HandleFunc("/convert", handlers.ConvertHandler)
@@ -20,8 +27,8 @@ func main() {
 	// Habilitar CORS
 	handlerWithCORS := enableCORS(mux)
 
-	log.Println("Servidor corriendo en http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", handlerWithCORS))
+	log.Printf("Servidor corriendo en http://localhost:%s", port)
+	log.Fatal(http.ListenAndServe(":"+port, handlerWithCORS))
 }
 
 func enableCORS(next http.Handler) http.Handler {

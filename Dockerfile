@@ -1,34 +1,32 @@
-# Usar una imagen base de Go
+# Etapa de construcción
 FROM golang:1.21-alpine AS build
 
-# Establecer el directorio de trabajo
 WORKDIR /server
 
-# Copiar los archivos go.mod y go.sum
+# Copiar dependencias
 COPY go.mod go.sum ./
-
-# Descargar las dependencias
 RUN go mod download
 
-# Copiar el resto de los archivos
+# Copiar el resto del proyecto
 COPY . .
 
 # Compilar la aplicación
 RUN go build -o blank .
 
-# Usar Alpine para la etapa de ejecución
+# Etapa de ejecución
 FROM alpine:latest
 
 WORKDIR /root/
 
-# Copiar el binario desde la etapa de compilación
+# Copiar binario y recursos necesarios
 COPY --from=build /server/blank .
-
-# Copiar el directorio config
 COPY --from=build /server/config ./config
+
+# Añadir permisos al binario
+RUN chmod +x blank
 
 # Exponer el puerto
 EXPOSE 8080
 
-# Comando para ejecutar la aplicación
+# Ejecutar la aplicación
 CMD ["./blank"]
