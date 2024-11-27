@@ -2,7 +2,7 @@
 FROM golang:1.23.1-alpine AS build
 
 # Establecer el directorio de trabajo
-WORKDIR /app
+WORKDIR /
 
 # Copiar los archivos go.mod y go.sum
 COPY go.mod go.sum ./
@@ -25,10 +25,10 @@ FROM alpine:latest
 WORKDIR /root/
 
 # Copiar el binario desde la etapa de compilación
-COPY --from=build /app/blank .
+COPY --from=build /blank .
 
 # Copiar el directorio config
-COPY --from=build /app/config ./config
+COPY --from=build /config ./config
 
 # Exponer el puerto
 EXPOSE 8080
