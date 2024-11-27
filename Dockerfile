@@ -1,32 +1,20 @@
-# Etapa de construcción
-FROM golang:1.21-alpine AS build
+# Usar una imagen base de Go
+FROM golang:1.20-alpine
 
-WORKDIR /server
+# Establecer el directorio de trabajo
+WORKDIR /app
 
-# Copiar dependencias
-COPY go.mod go.sum ./
-RUN go mod download
-
-# Copiar el resto del proyecto
+# Copiar los archivos del proyecto al contenedor
 COPY . .
 
-# Compilar la aplicación
-RUN go build -o blank .
+# Descargar dependencias del proyecto (si usas mod)
+RUN go mod tidy
 
-# Etapa de ejecución
-FROM alpine:latest
+# Compilar la aplicación Go
+RUN go build -o main .
 
-WORKDIR /root/
-
-# Copiar binario y recursos necesarios
-COPY --from=build /server/blank .
-COPY --from=build /server/config ./config
-
-# Añadir permisos al binario
-RUN chmod +x blank
-
-# Exponer el puerto
+# Exponer el puerto en el que la app va a correr
 EXPOSE 8080
 
-# Ejecutar la aplicación
-CMD ["./blank"]
+# Comando para ejecutar la app cuando el contenedor inicie
+CMD ["./main"]
