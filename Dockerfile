@@ -1,8 +1,8 @@
 # Usar una imagen base de Go
-FROM golang:1.23.1-alpine AS build
+FROM golang:1.21-alpine AS build
 
 # Establecer el directorio de trabajo
-WORKDIR /
+WORKDIR /server
 
 # Copiar los archivos go.mod y go.sum
 COPY go.mod go.sum ./
@@ -25,10 +25,10 @@ FROM alpine:latest
 WORKDIR /root/
 
 # Copiar el binario desde la etapa de compilación
-COPY --from=build /blank .
+COPY --from=build /server/blank .
 
 # Copiar el directorio config
-COPY --from=build /config ./config
+COPY --from=build /server/config ./config
 
 # Exponer el puerto
 EXPOSE 8080
