@@ -13,9 +13,6 @@ RUN go mod download
 # Copiar el resto de los archivos
 COPY . .
 
-# Copiar el directorio config
-COPY config ./config
-
 # Compilar la aplicación
 RUN go build -o blank .
 
