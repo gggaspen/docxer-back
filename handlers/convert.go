@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 
@@ -65,8 +66,15 @@ func ConvertHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	inputPath := filepath.Join("uploads", req.FileName)
-	outputPath := filepath.Join("downloads", req.FileName)
+	// Decodificar el nombre del archivo
+	fileName, err := url.QueryUnescape(req.FileName)
+	if err != nil {
+		http.Error(w, "Nombre de archivo inválido", http.StatusBadRequest)
+		return
+	}
+
+	inputPath := filepath.Join("uploads", fileName)
+	outputPath := filepath.Join("downloads", fileName)
 
 	doc, err := docx.ReadDocxFile(inputPath)
 	if err != nil {
@@ -87,13 +95,23 @@ func ConvertHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write([]byte(fmt.Sprintf("Archivo convertido: %s", req.FileName)))
+	w.Write([]byte(fmt.Sprintf("Archivo convertido: %s", fileName)))
 }
 
 // DownloadHandler permite descargar el archivo convertido
 func DownloadHandler(w http.ResponseWriter, r *http.Request) {
-	fileName := filepath.Base(r.URL.Path)
+	// Decodificar el nombre del archivo desde la URL
+	fileName, err := url.QueryUnescape(filepath.Base(r.URL.Path))
+	if err != nil {
+		http.Error(w, "Nombre de archivo inválido", http.StatusBadRequest)
+		return
+	}
+
 	filePath := filepath.Join("downloads", fileName)
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		http.Error(w, "Archivo no encontrado", http.StatusNotFound)
+		return
+	}
 
 	http.ServeFile(w, r, filePath)
 }
